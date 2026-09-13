@@ -11,10 +11,14 @@
     --r-lg:16px; --r-md:12px; --r-pill:999px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--ink);font-family:Inter,system-ui,sans-serif;color:var(--ink);
+  body{margin:0;background:#101315;font-family:Roboto,system-ui,-apple-system,sans-serif;color:var(--ink);
     display:flex;justify-content:center;min-height:100vh}
   .phone{width:min(430px,100%);min-height:100vh;background:var(--paper);
     display:flex;flex-direction:column;position:relative}
+  .statusbar{display:flex;align-items:center;justify-content:space-between;
+    padding:8px 16px 0;background:var(--ink);color:var(--paper);
+    font-size:12px;font-family:Roboto,system-ui,sans-serif}
+  .statusbar .sic{display:flex;gap:6px;align-items:center}
   .topbar{display:flex;align-items:center;gap:8px;padding:12px 16px;
     background:var(--ink);color:var(--paper)}
   .topbar .app{font-family:ui-monospace,monospace;font-size:12px}
@@ -66,8 +70,12 @@
     padding:12px;font-size:14px}
   .rowbtns{display:flex;gap:8px}.rowbtns>*{flex:1}
   .sim{position:sticky;bottom:0;background:var(--ink);color:var(--paper);
-    padding:10px 12px;font-size:11px}
-  .sim .btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    font-size:11px;border-top:1px solid #333}
+  .sim summary{padding:12px 16px;min-height:48px;cursor:pointer;list-style:none;
+    display:flex;align-items:center;gap:8px}
+  .sim summary::before{content:"⌃";opacity:.7}
+  .sim[open] summary::before{content:"⌄"}
+  .sim .btns{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
   .sim button{flex:1;min-height:48px;border-radius:var(--r-pill);border:1px solid var(--paper);
     background:transparent;color:var(--paper);font-size:12px;min-width:80px}
   .dialog{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;
@@ -87,6 +95,7 @@
 <body data-state="loading">
 
 <div class="phone">
+  <div class="statusbar"><span>14:32</span><span class="sic"><span>▲</span><span>WiFi</span><span>▮▮▮ 87%</span></span></div>
   <div class="topbar">
     <span>◈</span>
     <span><span class="app">WADaemon</span><br><span class="pkg">com.zaaaam.wadaemon</span></span>
@@ -166,7 +175,8 @@
     </section>
   </main>
 
-  <div class="sim">SIMULASI STATE — klik untuk preview tanpa backend:
+  <details class="sim">
+    <summary>Panel simulasi (khusus mockup — tidak ada di aplikasi asli)</summary>
     <div class="btns">
       <button onclick="setState('loading',true)">Loading</button>
       <button onclick="setState('unpaired')">Unpaired</button>
@@ -174,7 +184,7 @@
       <button onclick="setState('connected')">Terhubung</button>
       <button onclick="setState('error')">Error</button>
     </div>
-  </div>
+  </details>
 </div>
 
 <div class="dialog" id="dlg"><div class="box">
