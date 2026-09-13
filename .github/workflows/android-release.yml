@@ -22,8 +22,33 @@ jobs:
           java-version: "17"
           cache: gradle
 
+      - name: Set up Node 20 (untuk npm ci nodejs-project)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: nodejs-project/package-lock.json
+
+      - name: Install dependensi Node bridge
+        working-directory: nodejs-project
+        run: npm ci --omit=dev
+
+      - name: Unduh libnode prebuilt (nodejs-mobile v18.20.4)
+        run: |
+          curl -sL -o /tmp/libnode.zip https://github.com/nodejs-mobile/nodejs-mobile/releases/download/v18.20.4/nodejs-mobile-v18.20.4-android.zip
+          rm -rf app/libnode/bin app/libnode/include
+          mkdir -p app/libnode
+          unzip -q /tmp/libnode.zip -d /tmp/libnode
+          mv /tmp/libnode/bin /tmp/libnode/include app/libnode/
+          ls app/libnode/bin
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Install NDK + CMake
+        run: |
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "ndk;26.3.11579264" "cmake;3.22.1" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Build release APK
         uses: gradle/gradle-build-action@v3

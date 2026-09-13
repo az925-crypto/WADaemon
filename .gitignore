@@ -11,6 +11,9 @@ local.properties
 *.class
 # Node (mockup tooling bila ada)
 node_modules/
+# libnode prebuilt (54MB+, diunduh di CI — JANGAN di-commit)
+app/libnode/bin/
+app/libnode/include/
 # OS / IDE
 .DS_Store
 .idea/

@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tabDashboard"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notifikasi persistent (pratinjau)"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/notifTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="WADaemon"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/notifBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Menyiapkan..."
+            android:layout_marginBottom="12dp" />
+
+        <LinearLayout
+            android:id="@+id/cardLoading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Menyiapkan bridge WhatsApp..."
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/loadText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Menghubungkan ke layanan daemon."
+                android:layout_marginTop="8dp" />
+
+            <Button
+                android:id="@+id/btnRetryBridge"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="Coba Lagi" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cardPair"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pairing WhatsApp"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nomor WhatsApp" />
+
+            <EditText
+                android:id="@+id/inputPhone"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="0812 3456 7890"
+                android:inputType="phone" />
+
+            <TextView
+                android:id="@+id/normPreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:textColor="#14B8A6" />
+
+            <Button
+                android:id="@+id/btnPair"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="Buat Kode Pairing" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cardCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Masukkan kode ini di WhatsApp: Pengaturan, Perangkat Tertaut, Tautkan dengan nomor telepon" />
+
+            <TextView
+                android:id="@+id/pairCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="---- ----"
+                android:textSize="36sp"
+                android:fontFamily="monospace"
+                android:gravity="center" />
+
+            <TextView
+                android:id="@+id/pairInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center" />
+
+            <Button
+                android:id="@+id/btnCopyCode"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Salin Kode" />
+
+            <Button
+                android:id="@+id/btnCancelPair"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Batalkan Pairing"
+                android:background="?attr/selectableItemBackground" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cardConnected"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status: Terhubung"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/connInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Putuskan Sesi" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/cardError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#FFFFFF"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Koneksi terputus"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/errorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/btnRetryError"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Coba Lagi" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/statsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+</ScrollView>
