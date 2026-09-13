@@ -41,6 +41,8 @@
   body[data-state="pairing"] #v-pairing,
   body[data-state="connected"] #v-connected,
   body[data-state="error"] #v-error{display:flex}
+  body[data-state="perms"] #v-perms,
+  body[data-state="log"] #v-log{display:flex}
   .card{background:#fff;border:1px solid var(--stone);border-radius:var(--r-lg);padding:16px}
   h1{font-size:20px;margin:0} p{margin:0;font-size:14px;line-height:1.5}
   .mono{font-family:ui-monospace,JetBrains Mono,monospace}
@@ -88,6 +90,13 @@
     font-size:13px;display:none}
   .spinner{width:32px;height:32px;border-radius:50%;margin:24px auto 0;
     border:3px solid var(--stone);border-top-color:var(--amber);animation:spin 1s linear infinite}
+  .iconbtn{background:none;border:none;color:var(--paper);font-size:18px;min-width:48px;min-height:48px}
+  .permrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--stone);font-size:14px}
+  .permrow .st{margin-left:auto;font-size:12px;font-weight:700}
+  .st.ok{color:var(--teal)} .st.no{color:var(--red)}
+  .logbox{background:var(--ink);color:#C9F2EC;border-radius:var(--r-md);padding:12px;
+    font-family:ui-monospace,monospace;font-size:12px;line-height:1.6;
+    max-height:320px;overflow-y:auto;white-space:pre-wrap}
   @keyframes spin{to{transform:rotate(360deg)}}
   .center{text-align:center}
 </style>
@@ -99,7 +108,9 @@
   <div class="topbar">
     <span>◈</span>
     <span><span class="app">WADaemon</span><br><span class="pkg">com.zaaaam.wadaemon</span></span>
-    <span class="chip"><span class="dot pulse" id="chipDot"></span><span id="chipText">Menyiapkan...</span></span>
+    <button class="iconbtn" onclick="setState('log')" title="Log bridge">≣</button>
+    <button class="iconbtn" onclick="setState('perms')" title="Izin aplikasi">⚙</button>
+    <span class="chip" style="margin-left:0"><span class="dot pulse" id="chipDot"></span><span id="chipText">Menyiapkan...</span></span>
   </div>
 
   <div class="notif"><small>PRATINJAU NOTIFIKASI PERSISTENT</small><b id="notifTitle">WADaemon • Menyiapkan...</b><span id="notifBody">Menghubungkan bridge...</span></div>
@@ -113,7 +124,7 @@
       <p class="mono" id="loadCount">Menunggu respons bridge — 03/10 detik</p>
       <div class="bar"><i id="loadBar" style="width:30%"></i></div>
       <button class="btn secondary" onclick="setState('loading',true)">Coba Lagi</button>
-      <p><small>Lihat log bridge</small></p>
+      <button class="textbtn" onclick="setState('log')">Lihat log bridge</button>
       <p id="loadTimeout" style="display:none;color:var(--red)">Bridge tidak merespons setelah 10 detik. Periksa izin aplikasi atau tap Coba Lagi.</p>
     </section>
 
@@ -173,6 +184,36 @@
         <button class="btn secondary" onclick="setState('unpaired')">Buat Kode Baru</button>
       </div>
     </section>
+    <!-- PERMS -->
+    <section data-state-view id="v-perms">
+      <div class="card">
+        <h1>Izin aplikasi</h1>
+        <p>Tanpa izin ini koneksi bisa mati saat layar mati atau HP idle.</p>
+        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+ — untuk notifikasi persistent</small></span><span class="st no" id="pNotif">Belum</span></div>
+        <div class="permrow"><span>⚡ Abaikan optimasi baterai<br><small>Agar tidak di-kill sistem saat idle</small></span><span class="st no" id="pBatt">Belum</span></div>
+        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service<br><small>Diberikan otomatis saat instal</small></span><span class="st ok">Aktif</span></div>
+        <button class="btn secondary" onclick="grant('pNotif')">Minta Izin Notifikasi</button>
+        <button class="btn secondary" onclick="grant('pBatt')">Bebaskan dari Optimasi Baterai</button>
+        <button class="textbtn" onclick="setState('unpaired')">← Kembali</button>
+      </div>
+    </section>
+
+    <!-- LOG -->
+    <section data-state-view id="v-log">
+      <div class="card">
+        <h1>Log bridge</h1>
+        <div class="logbox" id="logBox">[14:31:02] bridge listen 127.0.0.1:3939
+[14:31:03] GET /status → unpaired
+[14:31:20] POST /pair +62... → kode dibuat
+[14:32:10] connection.update → open
+[14:32:10] GET /status → connected</div>
+        <div class="rowbtns">
+          <button class="btn secondary" onclick="toast('Log disalin')">Salin Log</button>
+          <button class="btn secondary" onclick="document.getElementById('logBox').textContent='(log dikosongkan)';toast('Log dihapus')">Hapus</button>
+        </div>
+        <button class="textbtn" onclick="setState('unpaired')">← Kembali</button>
+      </div>
+    </section>
   </main>
 
   <details class="sim">
@@ -183,6 +224,8 @@
       <button onclick="setState('pairing')">Pairing</button>
       <button onclick="setState('connected')">Terhubung</button>
       <button onclick="setState('error')">Error</button>
+      <button onclick="setState('perms')">Izin</button>
+      <button onclick="setState('log')">Log</button>
     </div>
   </details>
 </div>
@@ -200,12 +243,15 @@
 <script>
 const chip={loading:["Menyiapkan...","var(--grey)"],unpaired:["Terputus","var(--grey)"],
 pairing:["Menunggu Pairing","var(--amber)"],connected:["Terhubung","var(--teal)"],
-error:["Gagal Terhubung","var(--grey)"]};
+error:["Gagal Terhubung","var(--grey)"],
+perms:["Izin Aplikasi","var(--grey)"],log:["Log Bridge","var(--grey)"]};
 const notif={loading:["WADaemon • Menyiapkan...","Menghubungkan bridge..."],
 unpaired:["WADaemon • Terputus","Tap untuk buka WADaemon dan pairing"],
 pairing:["WADaemon • Menunggu pairing...","Kode tampil — segera masukkan di WhatsApp"],
 connected:["WADaemon • Terhubung","+62 ... • Aktif"],
-error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"]};
+error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"],
+perms:["WADaemon • Izin aplikasi","Periksa izin notifikasi & baterai"],
+log:["WADaemon • Log bridge","Menampilkan log daemon"]};
 let timers=[];
 function clearT(){timers.forEach(clearInterval);timers=[]}
 function digits(v){return String(v||"").replace(/\D/g,"")}
@@ -214,6 +260,7 @@ function normPreview(){const v=document.getElementById("phone").value;
   document.getElementById("normOut").textContent=v?("Tersimpan sebagai: "+normID(v)):""}
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";
   setTimeout(()=>t.style.display="none",2000)}
+function grant(id){const el=document.getElementById(id);el.textContent="Diizinkan";el.className="st ok";toast("Izin diberikan (simulasi)")}
 function errText(){document.getElementById("errMsg").textContent=document.getElementById("errSel").value}
 function rnd(n){let s="";for(let i=0;i<n;i++)s+=Math.floor(Math.random()*10);return s}
 function paintCode(){const a=rnd(4),b=rnd(4);
