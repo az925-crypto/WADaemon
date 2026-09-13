@@ -15,11 +15,8 @@ android {
         versionCode = 1
         versionName = "0.1.0"
 
-        ndk {
-            // PRD: hanya 2 ABI agar APK tidak bengkak.
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
-        }
-
+        // PRD: hanya 2 ABI agar APK tidak bengkak (diatur di splits di bawah;
+        // ndk.abiFilters tidak boleh dipakai bersamaan dengan splits).
         externalNativeBuild {
             cmake {
                 arguments += listOf("-DANDROID_STL=c++_shared")
