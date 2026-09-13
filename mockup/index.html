@@ -41,12 +41,15 @@
   body[data-state="error"] #v-error{display:flex}
   .tab{display:none;flex-direction:column;gap:12px}
   .tab.active{display:flex}
-  .card{background:#fff;border:1px solid var(--stone);border-radius:var(--r-lg);padding:16px}
-  h1{font-size:20px;margin:0} p{margin:0;font-size:14px;line-height:1.5}
+  .card{background:#fff;border:1px solid var(--stone);border-radius:var(--r-lg);padding:16px;
+    display:flex;flex-direction:column;gap:10px}
+  h1{font-size:20px;margin:0} h2{font-size:16px;margin:0}
+  p{margin:0;font-size:14px;line-height:1.5}
   .mono{font-family:ui-monospace,JetBrains Mono,monospace}
   label{font-size:12px;letter-spacing:.04em;color:#444}
-  input{width:100%;min-height:48px;border-radius:var(--r-md);border:1px solid #999;
-    padding:0 12px;font-size:16px;background:#fff;color:var(--ink)}
+  input,select,textarea{width:100%;min-height:48px;border-radius:var(--r-md);border:1px solid #999;
+    padding:0 12px;font-size:15px;background:#fff;color:var(--ink);font-family:inherit}
+  textarea{min-height:96px;padding:10px 12px;font-family:ui-monospace,monospace;font-size:13px}
   .btn{min-height:48px;border-radius:var(--r-md);font-size:15px;width:100%;
     border:1px solid var(--ink);background:var(--ink);color:var(--paper)}
   .btn.secondary{background:transparent;color:var(--ink)}
@@ -69,6 +72,24 @@
   .err{background:#FFF1F2;border:1px solid var(--red);border-radius:var(--r-md);
     padding:12px;font-size:14px}
   .rowbtns{display:flex;gap:8px}.rowbtns>*{flex:1}
+  .stats{display:flex;gap:8px}
+  .stat{flex:1;background:#fff;border:1px solid var(--stone);border-radius:var(--r-md);
+    padding:10px;text-align:center}
+  .stat b{display:block;font-size:18px;font-family:ui-monospace,monospace}
+  .stat small{color:#666;font-size:11px}
+  .modrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--stone)}
+  .modrow:last-child{border:none}
+  .modrow .meta{flex:1}
+  .modrow .cmds{font-family:ui-monospace,monospace;font-size:12px;color:#555}
+  .switch{position:relative;width:52px;height:32px;flex:none}
+  .switch input{opacity:0;width:100%;height:100%;position:absolute;margin:0;cursor:pointer}
+  .sw{position:absolute;inset:0;background:var(--grey);border-radius:var(--r-pill);transition:.2s}
+  .sw::after{content:"";position:absolute;width:24px;height:24px;border-radius:50%;
+    background:#fff;top:4px;left:4px;transition:.2s}
+  .switch input:checked + .sw{background:var(--teal)}
+  .switch input:checked + .sw::after{left:24px}
+  details.mod{border-bottom:1px solid var(--stone);padding:4px 0}
+  details.mod summary{min-height:48px;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700}
   .permrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--stone);font-size:14px}
   .permrow .st{margin-left:auto;font-size:12px;font-weight:700}
   .st.ok{color:var(--teal)} .st.no{color:var(--red)}
@@ -76,8 +97,8 @@
     font-family:ui-monospace,monospace;font-size:12px;line-height:1.6;
     max-height:320px;overflow-y:auto;white-space:pre-wrap}
   .bottomnav{display:flex;background:#fff;border-top:1px solid var(--stone)}
-  .bottomnav button{flex:1;background:none;border:none;min-height:64px;font-size:12px;color:#666;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .bottomnav button{flex:1;background:none;border:none;min-height:64px;font-size:11px;color:#666;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit}
   .bottomnav button .ic{font-size:20px}
   .bottomnav button.active{color:var(--ink);font-weight:700}
   .sim{background:var(--ink);color:var(--paper);font-size:11px}
@@ -93,9 +114,9 @@
   .dialog.open{display:flex}
   .dialog .box{background:#fff;border-radius:var(--r-lg);padding:20px;max-width:360px;width:100%}
   .dialog .btns{display:flex;gap:16px;margin-top:16px}
-  .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);
+  .toast{position:fixed;left:50%;bottom:160px;transform:translateX(-50%);
     background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:var(--r-pill);
-    font-size:13px;display:none}
+    font-size:13px;display:none;max-width:90%}
   .spinner{width:32px;height:32px;border-radius:50%;margin:24px auto 0;
     border:3px solid var(--stone);border-top-color:var(--amber);animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -105,7 +126,7 @@
 <body data-state="loading">
 
 <div class="phone">
-  <div class="statusbar"><span>14:32</span><span><span>▲</span> <span>WiFi</span> <span>▮▮▮ 87%</span></span></div>
+  <div class="statusbar"><span>14:32</span><span>▲ WiFi ▮▮▮ 87%</span></div>
   <div class="topbar">
     <span>◈</span>
     <span><span class="app">WADaemon</span><br><span class="pkg">com.zaaaam.wadaemon</span></span>
@@ -113,8 +134,8 @@
   </div>
 
   <main>
-    <!-- TAB BERANDA -->
-    <div class="tab active" id="tab-beranda">
+    <!-- TAB DASHBOARD -->
+    <div class="tab active" id="tab-dashboard">
       <div class="notif"><small>PRATINJAU NOTIFIKASI PERSISTENT</small><b id="notifTitle">WADaemon • Menyiapkan...</b><span id="notifBody">Menghubungkan bridge...</span></div>
 
       <section data-state-view id="v-loading" class="card center">
@@ -130,15 +151,14 @@
 
       <section data-state-view id="v-unpaired">
         <div class="card">
+          <h2>Pairing WhatsApp</h2>
           <label>Nomor WhatsApp</label>
-          <p>Masukkan nomor yang akan di-pairing</p>
           <input id="phone" type="tel" placeholder="0812 3456 7890" oninput="normPreview()">
-          <div class="helper" style="margin-top:8px">Contoh normalisasi otomatis:<br>
-            0812... → +62 812-xxxx-xxxx<br>62 812... → +62 812-xxxx-xxxx<br>+62 812... → +62 812-xxxx-xxxx<br>
-            <small>Format apapun akan disimpan sebagai +62...</small></div>
+          <div class="helper">Contoh normalisasi otomatis:<br>
+            0812... → +62 812-xxxx-xxxx<br>62 812... → +62 812-xxxx-xxxx<br>+62 812... → +62 812-xxxx-xxxx</div>
           <p class="preview-chip" id="normOut"></p>
           <button class="btn" onclick="toPairing()">Buat Kode Pairing</button>
-          <p><small>Kode berlaku 60 detik. Pastikan WhatsApp di HP target bisa menerima kode.</small></p>
+          <p><small>Kode berlaku 60 detik.</small></p>
         </div>
       </section>
 
@@ -161,7 +181,6 @@
           <h1>✓ Terhubung</h1>
           <p>Nomor terhubung<br><b class="mono">+62 812-3456-7890</b></p>
           <p>Terhubung sejak<br><b id="connSince">13 Sep 2026, 14:32 WIB</b> <span class="mono" id="connDur">Durasi: 00:00:00</span></p>
-          <p><small>Pesan diteruskan: 128 | Bridge: aktif</small></p>
         </div>
         <button class="btn danger" onclick="document.getElementById('dlg').classList.add('open')">⛓ Putuskan Sesi</button>
       </section>
@@ -170,7 +189,7 @@
         <div class="card center">
           <div style="font-size:24px;color:var(--red)">⚠</div>
           <h1>Koneksi terputus</h1>
-          <select id="errSel" onchange="errText()" style="min-height:48px;width:100%">
+          <select id="errSel" onchange="errText()">
             <option>Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</option>
             <option>Gagal pairing: Kode salah atau kedaluwarsa. Buat kode baru.</option>
             <option>Bridge belum ready setelah 10 detik. Coba lagi atau periksa izin latar belakang.</option>
@@ -180,20 +199,84 @@
           <button class="btn secondary" onclick="setState('unpaired')">Buat Kode Baru</button>
         </div>
       </section>
+
+      <div class="stats">
+        <div class="stat"><b>128</b><small>Pesan diteruskan</small></div>
+        <div class="stat"><b id="statMod">2</b><small>Modul aktif</small></div>
+        <div class="stat"><b>02:18</b><small>Uptime (jam)</small></div>
+      </div>
+
+      <div class="card">
+        <h2>Modul aktif <span class="textbtn" style="min-height:0" onclick="showTab('modul')">Lihat semua →</span></h2>
+        <div id="dashMods">
+          <div class="modrow"><span class="meta"><b>Menu &amp; Perintah</b><br><span class="cmds">.menu .help .ping</span></span></div>
+          <div class="modrow"><span class="meta"><b>Stiker</b><br><span class="cmds">.stiker</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB MODUL -->
+    <div class="tab" id="tab-modul">
+      <div class="card">
+        <h1>Modul <small style="font-weight:400">(<span id="modCount">2</span> aktif)</small></h1>
+        <div id="modList">
+          <details class="mod" open>
+            <summary>Menu &amp; Perintah <small class="mono">v1.2</small></summary>
+            <p class="cmds mono">.menu .help .ping</p>
+            <p>Balas perintah dasar + menu bantuan otomatis.</p>
+            <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" checked onchange="countMods()"><span class="sw"></span></span></label>
+            <div class="rowbtns"><button class="btn secondary" onclick="toast('Konfigurasi disimpan (simulasi)')">Simpan Config</button>
+            <button class="btn danger" onclick="toast('Modul dihapus (simulasi)')">Hapus</button></div>
+          </details>
+          <details class="mod">
+            <summary>Stiker <small class="mono">v0.9</small></summary>
+            <p class="cmds mono">.stiker</p>
+            <p>Ubah gambar jadi stiker (proses di Kotlin native, tanpa sharp).</p>
+            <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" checked onchange="countMods()"><span class="sw"></span></span></label>
+            <div class="rowbtns"><button class="btn secondary" onclick="toast('Konfigurasi disimpan (simulasi)')">Simpan Config</button>
+            <button class="btn danger" onclick="toast('Modul dihapus (simulasi)')">Hapus</button></div>
+          </details>
+          <details class="mod">
+            <summary>AI Chat <small class="mono">v0.3</small></summary>
+            <p class="cmds mono">(tanpa prefix — balas DM)</p>
+            <p>Responder AI via modul luar (API key diisi di config).</p>
+            <label>API Key</label><input placeholder="sk-...">
+            <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" onchange="countMods()"><span class="sw"></span></span></label>
+            <div class="rowbtns"><button class="btn secondary" onclick="toast('Konfigurasi disimpan (simulasi)')">Simpan Config</button>
+            <button class="btn danger" onclick="toast('Modul dihapus (simulasi)')">Hapus</button></div>
+          </details>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>＋ Tambah Modul</h2>
+        <label>Nama modul</label><input id="nmName" placeholder="Contoh: Auto Reply">
+        <label>Sumber</label>
+        <select id="nmSrc"><option>Template: perintah sederhana</option><option>File .js dari penyimpanan</option><option>URL (git / raw)</option></select>
+        <label>Perintah (pisah spasi)</label><input id="nmCmds" placeholder=".halo .pagi">
+        <button class="btn" onclick="addMod()">Pasang Modul</button>
+      </div>
     </div>
 
     <!-- TAB LOG -->
     <div class="tab" id="tab-log">
       <div class="card">
-        <h1>Log bridge</h1>
-        <div class="logbox" id="logBox">[14:31:02] bridge listen 127.0.0.1:3939
-[14:31:03] GET /status → unpaired
-[14:31:20] POST /pair +62... → kode dibuat
-[14:32:10] connection.update → open
-[14:32:10] GET /status → connected</div>
+        <h1>Log</h1>
+        <select id="logFilter" onchange="filterLog()">
+          <option value="all">Semua sumber</option>
+          <option value="[bridge]">Bridge</option>
+          <option value="[menu]">Modul: Menu</option>
+          <option value="[stiker]">Modul: Stiker</option>
+        </select>
+        <div class="logbox" id="logBox">[bridge] listen 127.0.0.1:3939
+[bridge] GET /status → unpaired
+[menu] perintah .ping dari +62... → dibalas
+[bridge] POST /pair +62... → kode dibuat
+[stiker] gambar → webp (native) 34KB
+[bridge] connection.update → open</div>
         <div class="rowbtns">
           <button class="btn secondary" onclick="toast('Log disalin')">Salin Log</button>
-          <button class="btn secondary" onclick="document.getElementById('logBox').textContent='(log dikosongkan)';toast('Log dihapus')">Hapus</button>
+          <button class="btn secondary" onclick="toast('Log dihapus (simulasi)')">Hapus</button>
         </div>
       </div>
     </div>
@@ -203,9 +286,9 @@
       <div class="card">
         <h1>Izin aplikasi</h1>
         <p>Tanpa izin ini koneksi bisa mati saat layar mati atau HP idle.</p>
-        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+ — untuk notifikasi persistent</small></span><span class="st no" id="pNotif">Belum</span></div>
-        <div class="permrow"><span>⚡ Abaikan optimasi baterai<br><small>Agar tidak di-kill sistem saat idle</small></span><span class="st no" id="pBatt">Belum</span></div>
-        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service<br><small>Diberikan otomatis saat instal</small></span><span class="st ok">Aktif</span></div>
+        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+</small></span><span class="st no" id="pNotif">Belum</span></div>
+        <div class="permrow"><span>⚡ Abaikan optimasi baterai</span><span class="st no" id="pBatt">Belum</span></div>
+        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service</span><span class="st ok">Aktif</span></div>
         <button class="btn secondary" onclick="grant('pNotif')">Minta Izin Notifikasi</button>
         <button class="btn secondary" onclick="grant('pBatt')">Bebaskan dari Optimasi Baterai</button>
       </div>
@@ -217,7 +300,8 @@
   </main>
 
   <nav class="bottomnav">
-    <button id="nav-beranda" class="active" onclick="showTab('beranda')"><span class="ic">◈</span>Beranda</button>
+    <button id="nav-dashboard" class="active" onclick="showTab('dashboard')"><span class="ic">◈</span>Dashboard</button>
+    <button id="nav-modul" onclick="showTab('modul')"><span class="ic">🧩</span>Modul</button>
     <button id="nav-log" onclick="showTab('log')"><span class="ic">≣</span>Log</button>
     <button id="nav-pengaturan" onclick="showTab('pengaturan')"><span class="ic">⚙</span>Pengaturan</button>
   </nav>
@@ -253,6 +337,7 @@ unpaired:["WADaemon • Terputus","Tap untuk buka WADaemon dan pairing"],
 pairing:["WADaemon • Menunggu pairing...","Kode tampil — segera masukkan di WhatsApp"],
 connected:["WADaemon • Terhubung","+62 ... • Aktif"],
 error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"]};
+const LOG_LINES=document.getElementById("logBox").textContent.split("\n");
 let timers=[];
 function clearT(){timers.forEach(clearInterval);timers=[]}
 function digits(v){return String(v||"").replace(/\D/g,"")}
@@ -271,9 +356,20 @@ function showTab(t){document.querySelectorAll(".tab").forEach(e=>e.classList.rem
   document.getElementById("tab-"+t).classList.add("active");
   document.querySelectorAll(".bottomnav button").forEach(e=>e.classList.remove("active"));
   document.getElementById("nav-"+t).classList.add("active")}
-function toPairing(){showTab("beranda");setState("pairing")}
+function toPairing(){showTab("dashboard");setState("pairing")}
+function countMods(){const n=[...document.querySelectorAll("#modList input[type=checkbox]")].filter(c=>c.checked).length;
+  document.getElementById("modCount").textContent=n;document.getElementById("statMod").textContent=n}
+function addMod(){const n=document.getElementById("nmName").value.trim()||"Modul Baru";
+  const c=document.getElementById("nmCmds").value.trim()||"(tanpa perintah)";
+  const d=document.createElement("details");d.className="mod";
+  d.innerHTML=`<summary>${n} <small class="mono">v0.1</small></summary><p class="cmds mono">${c}</p><p>Modul baru (simulasi).</p><label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" checked onchange="countMods()"><span class="sw"></span></span></label>`;
+  document.getElementById("modList").appendChild(d);
+  document.getElementById("nmName").value="";document.getElementById("nmCmds").value="";
+  countMods();toast("Modul dipasang (simulasi)")}
+function filterLog(){const f=document.getElementById("logFilter").value;
+  document.getElementById("logBox").textContent=LOG_LINES.filter(l=>f==="all"||l.startsWith(f)).join("\n")||"(kosong)"}
 function setState(s,reset){
-  clearT();showTab("beranda");document.body.dataset.state=s;
+  clearT();showTab("dashboard");document.body.dataset.state=s;
   document.getElementById("chipText").textContent=chip[s][0];
   document.getElementById("chipDot").style.background=chip[s][1];
   document.getElementById("notifTitle").textContent=notif[s][0];
