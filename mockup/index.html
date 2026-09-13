@@ -16,9 +16,7 @@
   .phone{width:min(430px,100%);min-height:100vh;background:var(--paper);
     display:flex;flex-direction:column;position:relative}
   .statusbar{display:flex;align-items:center;justify-content:space-between;
-    padding:8px 16px 0;background:var(--ink);color:var(--paper);
-    font-size:12px;font-family:Roboto,system-ui,sans-serif}
-  .statusbar .sic{display:flex;gap:6px;align-items:center}
+    padding:8px 16px 0;background:var(--ink);color:var(--paper);font-size:12px}
   .topbar{display:flex;align-items:center;gap:8px;padding:12px 16px;
     background:var(--ink);color:var(--paper)}
   .topbar .app{font-family:ui-monospace,monospace;font-size:12px}
@@ -34,15 +32,15 @@
     border-radius:var(--r-md);padding:10px 12px;font-size:12px}
   .notif small{color:#666;letter-spacing:.04em}
   .notif b{display:block;margin-top:2px}
-  main{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+  main{flex:1;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px}
   [data-state-view]{display:none;flex-direction:column;gap:12px}
   body[data-state="loading"] #v-loading,
   body[data-state="unpaired"] #v-unpaired,
   body[data-state="pairing"] #v-pairing,
   body[data-state="connected"] #v-connected,
   body[data-state="error"] #v-error{display:flex}
-  body[data-state="perms"] #v-perms,
-  body[data-state="log"] #v-log{display:flex}
+  .tab{display:none;flex-direction:column;gap:12px}
+  .tab.active{display:flex}
   .card{background:#fff;border:1px solid var(--stone);border-radius:var(--r-lg);padding:16px}
   h1{font-size:20px;margin:0} p{margin:0;font-size:14px;line-height:1.5}
   .mono{font-family:ui-monospace,JetBrains Mono,monospace}
@@ -71,8 +69,18 @@
   .err{background:#FFF1F2;border:1px solid var(--red);border-radius:var(--r-md);
     padding:12px;font-size:14px}
   .rowbtns{display:flex;gap:8px}.rowbtns>*{flex:1}
-  .sim{position:sticky;bottom:0;background:var(--ink);color:var(--paper);
-    font-size:11px;border-top:1px solid #333}
+  .permrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--stone);font-size:14px}
+  .permrow .st{margin-left:auto;font-size:12px;font-weight:700}
+  .st.ok{color:var(--teal)} .st.no{color:var(--red)}
+  .logbox{background:var(--ink);color:#C9F2EC;border-radius:var(--r-md);padding:12px;
+    font-family:ui-monospace,monospace;font-size:12px;line-height:1.6;
+    max-height:320px;overflow-y:auto;white-space:pre-wrap}
+  .bottomnav{display:flex;background:#fff;border-top:1px solid var(--stone)}
+  .bottomnav button{flex:1;background:none;border:none;min-height:64px;font-size:12px;color:#666;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .bottomnav button .ic{font-size:20px}
+  .bottomnav button.active{color:var(--ink);font-weight:700}
+  .sim{background:var(--ink);color:var(--paper);font-size:11px}
   .sim summary{padding:12px 16px;min-height:48px;cursor:pointer;list-style:none;
     display:flex;align-items:center;gap:8px}
   .sim summary::before{content:"⌃";opacity:.7}
@@ -85,18 +93,11 @@
   .dialog.open{display:flex}
   .dialog .box{background:#fff;border-radius:var(--r-lg);padding:20px;max-width:360px;width:100%}
   .dialog .btns{display:flex;gap:16px;margin-top:16px}
-  .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);
+  .toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);
     background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:var(--r-pill);
     font-size:13px;display:none}
   .spinner{width:32px;height:32px;border-radius:50%;margin:24px auto 0;
     border:3px solid var(--stone);border-top-color:var(--amber);animation:spin 1s linear infinite}
-  .iconbtn{background:none;border:none;color:var(--paper);font-size:18px;min-width:48px;min-height:48px}
-  .permrow{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--stone);font-size:14px}
-  .permrow .st{margin-left:auto;font-size:12px;font-weight:700}
-  .st.ok{color:var(--teal)} .st.no{color:var(--red)}
-  .logbox{background:var(--ink);color:#C9F2EC;border-radius:var(--r-md);padding:12px;
-    font-family:ui-monospace,monospace;font-size:12px;line-height:1.6;
-    max-height:320px;overflow-y:auto;white-space:pre-wrap}
   @keyframes spin{to{transform:rotate(360deg)}}
   .center{text-align:center}
 </style>
@@ -104,102 +105,85 @@
 <body data-state="loading">
 
 <div class="phone">
-  <div class="statusbar"><span>14:32</span><span class="sic"><span>▲</span><span>WiFi</span><span>▮▮▮ 87%</span></span></div>
+  <div class="statusbar"><span>14:32</span><span><span>▲</span> <span>WiFi</span> <span>▮▮▮ 87%</span></span></div>
   <div class="topbar">
     <span>◈</span>
     <span><span class="app">WADaemon</span><br><span class="pkg">com.zaaaam.wadaemon</span></span>
-    <button class="iconbtn" onclick="setState('log')" title="Log bridge">≣</button>
-    <button class="iconbtn" onclick="setState('perms')" title="Izin aplikasi">⚙</button>
-    <span class="chip" style="margin-left:0"><span class="dot pulse" id="chipDot"></span><span id="chipText">Menyiapkan...</span></span>
+    <span class="chip"><span class="dot pulse" id="chipDot"></span><span id="chipText">Menyiapkan...</span></span>
   </div>
 
-  <div class="notif"><small>PRATINJAU NOTIFIKASI PERSISTENT</small><b id="notifTitle">WADaemon • Menyiapkan...</b><span id="notifBody">Menghubungkan bridge...</span></div>
-
   <main>
-    <!-- LOADING -->
-    <section data-state-view id="v-loading" class="card center">
-      <div class="spinner"></div>
-      <h1>Menyiapkan bridge WhatsApp...</h1>
-      <p>Menghubungkan ke layanan daemon. Ini biasanya 2–3 detik.</p>
-      <p class="mono" id="loadCount">Menunggu respons bridge — 03/10 detik</p>
-      <div class="bar"><i id="loadBar" style="width:30%"></i></div>
-      <button class="btn secondary" onclick="setState('loading',true)">Coba Lagi</button>
-      <button class="textbtn" onclick="setState('log')">Lihat log bridge</button>
-      <p id="loadTimeout" style="display:none;color:var(--red)">Bridge tidak merespons setelah 10 detik. Periksa izin aplikasi atau tap Coba Lagi.</p>
-    </section>
+    <!-- TAB BERANDA -->
+    <div class="tab active" id="tab-beranda">
+      <div class="notif"><small>PRATINJAU NOTIFIKASI PERSISTENT</small><b id="notifTitle">WADaemon • Menyiapkan...</b><span id="notifBody">Menghubungkan bridge...</span></div>
 
-    <!-- UNPAIRED -->
-    <section data-state-view id="v-unpaired">
-      <div class="card">
-        <label>Nomor WhatsApp</label>
-        <p>Masukkan nomor yang akan di-pairing</p>
-        <input id="phone" type="tel" placeholder="0812 3456 7890" oninput="normPreview()">
-        <div class="helper" style="margin-top:8px">Contoh normalisasi otomatis:<br>
-          0812... → +62 812-xxxx-xxxx<br>62 812... → +62 812-xxxx-xxxx<br>+62 812... → +62 812-xxxx-xxxx<br>
-          <small>Format apapun akan disimpan sebagai +62...</small></div>
-        <p class="preview-chip" id="normOut"></p>
-        <button class="btn" onclick="toPairing()">Buat Kode Pairing</button>
-        <p><small>Kode berlaku 60 detik. Pastikan WhatsApp di HP target bisa menerima kode.</small></p>
-      </div>
-    </section>
+      <section data-state-view id="v-loading" class="card center">
+        <div class="spinner"></div>
+        <h1>Menyiapkan bridge WhatsApp...</h1>
+        <p>Menghubungkan ke layanan daemon. Ini biasanya 2–3 detik.</p>
+        <p class="mono" id="loadCount">Menunggu respons bridge — 03/10 detik</p>
+        <div class="bar"><i id="loadBar" style="width:30%"></i></div>
+        <button class="btn secondary" onclick="setState('loading',true)">Coba Lagi</button>
+        <button class="textbtn" onclick="showTab('log')">Lihat log bridge</button>
+        <p id="loadTimeout" style="display:none;color:var(--red)">Bridge tidak merespons setelah 10 detik. Periksa izin aplikasi atau tap Coba Lagi.</p>
+      </section>
 
-    <!-- PAIRING -->
-    <section data-state-view id="v-pairing">
-      <div class="banner">Masukkan kode ini di WhatsApp → Pengaturan → Perangkat Tertaut → Tautkan dengan nomor telepon</div>
-      <div class="card center">
-        <div class="code"><span class="grp" id="codeA"></span><span class="sep">—</span><span class="grp" id="codeB"></span></div>
-        <p class="count" id="pairCount">Kedaluwarsa dalam 01:00</p>
-        <div class="bar"><i id="pairBar"></i></div>
-        <div class="rowbtns">
-          <button class="btn secondary" onclick="toast('Kode disalin')">⧉ Salin Kode</button>
-          <button class="textbtn" onclick="setState('unpaired')">Batalkan Pairing</button>
+      <section data-state-view id="v-unpaired">
+        <div class="card">
+          <label>Nomor WhatsApp</label>
+          <p>Masukkan nomor yang akan di-pairing</p>
+          <input id="phone" type="tel" placeholder="0812 3456 7890" oninput="normPreview()">
+          <div class="helper" style="margin-top:8px">Contoh normalisasi otomatis:<br>
+            0812... → +62 812-xxxx-xxxx<br>62 812... → +62 812-xxxx-xxxx<br>+62 812... → +62 812-xxxx-xxxx<br>
+            <small>Format apapun akan disimpan sebagai +62...</small></div>
+          <p class="preview-chip" id="normOut"></p>
+          <button class="btn" onclick="toPairing()">Buat Kode Pairing</button>
+          <p><small>Kode berlaku 60 detik. Pastikan WhatsApp di HP target bisa menerima kode.</small></p>
         </div>
-        <p><small id="pairFor">Kode untuk +62 ...</small></p>
-      </div>
-    </section>
+      </section>
 
-    <!-- CONNECTED -->
-    <section data-state-view id="v-connected">
-      <div class="card" style="border-color:var(--teal)">
-        <h1>✓ Terhubung</h1>
-        <p>Nomor terhubung<br><b class="mono" id="connNum">+62 812-3456-7890</b></p>
-        <p>Terhubung sejak<br><b id="connSince">13 Sep 2026, 14:32 WIB</b> <span class="mono" id="connDur">Durasi: 00:00:00</span></p>
-        <p><small>Pesan diteruskan: 128 | Bridge: v0.4.1 • Aktif</small></p>
-      </div>
-      <button class="btn danger" onclick="document.getElementById('dlg').classList.add('open')">⛓ Putuskan Sesi</button>
-    </section>
+      <section data-state-view id="v-pairing">
+        <div class="banner">Masukkan kode ini di WhatsApp → Pengaturan → Perangkat Tertaut → Tautkan dengan nomor telepon</div>
+        <div class="card center">
+          <div class="code"><span class="grp" id="codeA"></span><span class="sep">—</span><span class="grp" id="codeB"></span></div>
+          <p class="count" id="pairCount">Kedaluwarsa dalam 01:00</p>
+          <div class="bar"><i id="pairBar"></i></div>
+          <div class="rowbtns">
+            <button class="btn secondary" onclick="toast('Kode disalin')">⧉ Salin Kode</button>
+            <button class="textbtn" onclick="setState('unpaired')">Batalkan Pairing</button>
+          </div>
+          <p><small id="pairFor">Kode untuk +62 ...</small></p>
+        </div>
+      </section>
 
-    <!-- ERROR -->
-    <section data-state-view id="v-error">
-      <div class="card center">
-        <div style="font-size:24px;color:var(--red)">⚠</div>
-        <h1>Koneksi terputus</h1>
-        <select id="errSel" onchange="errText()" style="min-height:48px;width:100%">
-          <option>Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</option>
-          <option>Gagal pairing: Kode salah atau kedaluwarsa. Buat kode baru.</option>
-          <option>Bridge belum ready setelah 10 detik. Coba lagi atau periksa izin latar belakang.</option>
-        </select>
-        <div class="err" id="errMsg">Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</div>
-        <button class="btn" onclick="setState('loading',true)">Coba Lagi</button>
-        <button class="btn secondary" onclick="setState('unpaired')">Buat Kode Baru</button>
-      </div>
-    </section>
-    <!-- PERMS -->
-    <section data-state-view id="v-perms">
-      <div class="card">
-        <h1>Izin aplikasi</h1>
-        <p>Tanpa izin ini koneksi bisa mati saat layar mati atau HP idle.</p>
-        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+ — untuk notifikasi persistent</small></span><span class="st no" id="pNotif">Belum</span></div>
-        <div class="permrow"><span>⚡ Abaikan optimasi baterai<br><small>Agar tidak di-kill sistem saat idle</small></span><span class="st no" id="pBatt">Belum</span></div>
-        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service<br><small>Diberikan otomatis saat instal</small></span><span class="st ok">Aktif</span></div>
-        <button class="btn secondary" onclick="grant('pNotif')">Minta Izin Notifikasi</button>
-        <button class="btn secondary" onclick="grant('pBatt')">Bebaskan dari Optimasi Baterai</button>
-        <button class="textbtn" onclick="setState('unpaired')">← Kembali</button>
-      </div>
-    </section>
+      <section data-state-view id="v-connected">
+        <div class="card" style="border-color:var(--teal)">
+          <h1>✓ Terhubung</h1>
+          <p>Nomor terhubung<br><b class="mono">+62 812-3456-7890</b></p>
+          <p>Terhubung sejak<br><b id="connSince">13 Sep 2026, 14:32 WIB</b> <span class="mono" id="connDur">Durasi: 00:00:00</span></p>
+          <p><small>Pesan diteruskan: 128 | Bridge: aktif</small></p>
+        </div>
+        <button class="btn danger" onclick="document.getElementById('dlg').classList.add('open')">⛓ Putuskan Sesi</button>
+      </section>
 
-    <!-- LOG -->
-    <section data-state-view id="v-log">
+      <section data-state-view id="v-error">
+        <div class="card center">
+          <div style="font-size:24px;color:var(--red)">⚠</div>
+          <h1>Koneksi terputus</h1>
+          <select id="errSel" onchange="errText()" style="min-height:48px;width:100%">
+            <option>Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</option>
+            <option>Gagal pairing: Kode salah atau kedaluwarsa. Buat kode baru.</option>
+            <option>Bridge belum ready setelah 10 detik. Coba lagi atau periksa izin latar belakang.</option>
+          </select>
+          <div class="err" id="errMsg">Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</div>
+          <button class="btn" onclick="setState('loading',true)">Coba Lagi</button>
+          <button class="btn secondary" onclick="setState('unpaired')">Buat Kode Baru</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB LOG -->
+    <div class="tab" id="tab-log">
       <div class="card">
         <h1>Log bridge</h1>
         <div class="logbox" id="logBox">[14:31:02] bridge listen 127.0.0.1:3939
@@ -211,10 +195,32 @@
           <button class="btn secondary" onclick="toast('Log disalin')">Salin Log</button>
           <button class="btn secondary" onclick="document.getElementById('logBox').textContent='(log dikosongkan)';toast('Log dihapus')">Hapus</button>
         </div>
-        <button class="textbtn" onclick="setState('unpaired')">← Kembali</button>
       </div>
-    </section>
+    </div>
+
+    <!-- TAB PENGATURAN -->
+    <div class="tab" id="tab-pengaturan">
+      <div class="card">
+        <h1>Izin aplikasi</h1>
+        <p>Tanpa izin ini koneksi bisa mati saat layar mati atau HP idle.</p>
+        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+ — untuk notifikasi persistent</small></span><span class="st no" id="pNotif">Belum</span></div>
+        <div class="permrow"><span>⚡ Abaikan optimasi baterai<br><small>Agar tidak di-kill sistem saat idle</small></span><span class="st no" id="pBatt">Belum</span></div>
+        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service<br><small>Diberikan otomatis saat instal</small></span><span class="st ok">Aktif</span></div>
+        <button class="btn secondary" onclick="grant('pNotif')">Minta Izin Notifikasi</button>
+        <button class="btn secondary" onclick="grant('pBatt')">Bebaskan dari Optimasi Baterai</button>
+      </div>
+      <div class="card">
+        <h1>Tentang</h1>
+        <p class="mono" style="font-size:13px">WADaemon v0.0.1<br>com.zaaaam.wadaemon<br>Bridge 127.0.0.1:3939</p>
+      </div>
+    </div>
   </main>
+
+  <nav class="bottomnav">
+    <button id="nav-beranda" class="active" onclick="showTab('beranda')"><span class="ic">◈</span>Beranda</button>
+    <button id="nav-log" onclick="showTab('log')"><span class="ic">≣</span>Log</button>
+    <button id="nav-pengaturan" onclick="showTab('pengaturan')"><span class="ic">⚙</span>Pengaturan</button>
+  </nav>
 
   <details class="sim">
     <summary>Panel simulasi (khusus mockup — tidak ada di aplikasi asli)</summary>
@@ -224,8 +230,6 @@
       <button onclick="setState('pairing')">Pairing</button>
       <button onclick="setState('connected')">Terhubung</button>
       <button onclick="setState('error')">Error</button>
-      <button onclick="setState('perms')">Izin</button>
-      <button onclick="setState('log')">Log</button>
     </div>
   </details>
 </div>
@@ -243,15 +247,12 @@
 <script>
 const chip={loading:["Menyiapkan...","var(--grey)"],unpaired:["Terputus","var(--grey)"],
 pairing:["Menunggu Pairing","var(--amber)"],connected:["Terhubung","var(--teal)"],
-error:["Gagal Terhubung","var(--grey)"],
-perms:["Izin Aplikasi","var(--grey)"],log:["Log Bridge","var(--grey)"]};
+error:["Gagal Terhubung","var(--grey)"]};
 const notif={loading:["WADaemon • Menyiapkan...","Menghubungkan bridge..."],
 unpaired:["WADaemon • Terputus","Tap untuk buka WADaemon dan pairing"],
 pairing:["WADaemon • Menunggu pairing...","Kode tampil — segera masukkan di WhatsApp"],
 connected:["WADaemon • Terhubung","+62 ... • Aktif"],
-error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"],
-perms:["WADaemon • Izin aplikasi","Periksa izin notifikasi & baterai"],
-log:["WADaemon • Log bridge","Menampilkan log daemon"]};
+error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"]};
 let timers=[];
 function clearT(){timers.forEach(clearInterval);timers=[]}
 function digits(v){return String(v||"").replace(/\D/g,"")}
@@ -266,8 +267,13 @@ function rnd(n){let s="";for(let i=0;i<n;i++)s+=Math.floor(Math.random()*10);ret
 function paintCode(){const a=rnd(4),b=rnd(4);
   document.getElementById("codeA").innerHTML=[...a].map(c=>`<span class="d">${c}</span>`).join("");
   document.getElementById("codeB").innerHTML=[...b].map(c=>`<span class="d">${c}</span>`).join("")}
+function showTab(t){document.querySelectorAll(".tab").forEach(e=>e.classList.remove("active"));
+  document.getElementById("tab-"+t).classList.add("active");
+  document.querySelectorAll(".bottomnav button").forEach(e=>e.classList.remove("active"));
+  document.getElementById("nav-"+t).classList.add("active")}
+function toPairing(){showTab("beranda");setState("pairing")}
 function setState(s,reset){
-  clearT();document.body.dataset.state=s;
+  clearT();showTab("beranda");document.body.dataset.state=s;
   document.getElementById("chipText").textContent=chip[s][0];
   document.getElementById("chipDot").style.background=chip[s][1];
   document.getElementById("notifTitle").textContent=notif[s][0];
