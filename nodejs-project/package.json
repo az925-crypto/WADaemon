@@ -1,0 +1,19 @@
+{
+  "name": "wadaemon-bridge",
+  "version": "0.1.0",
+  "description": "WADaemon Node bridge: Baileys + local HTTP loopback + module loader",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "check": "node --check main.js && node --check bridge/server.js && node --check wa/connection.js && node --check wa/phone.js && node --check wa/state.js && node --check modules/loader.js && node --check modules/native-list.js && echo OK",
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "baileys": "^7.0.0-rc14",
+    "pino": "^9.4.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
