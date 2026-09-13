@@ -1,7 +1,12 @@
 # Catatan lib Node native — WADaemon
 
-Keputusan: **inti daemon hanya pakai lib Node pure-JS**.
-Lib yang membawa binding native TIDAK boleh masuk `nodejs-project`.
+Keputusan (revisi atas permintaan user): **modul boleh memakai library apa
+pun, termasuk yang berat atau membawa binding native** (contoh:
+wa-sticker-formatter via sharp/ffmpeg). Syaratnya: saat pasang, aplikasi
+wajib menampilkan **peringatan** (berat, bisa gagal di sebagian device,
+bisa menambah RAM/baterai), tapi instalasi tetap dilanjutkan.
+
+Inti daemon sendiri tetap pure-JS agar selalu ringan dan stabil.
 
 ## Contoh konkret: wa-sticker-formatter (tidak bisa di daemon)
 

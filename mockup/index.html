@@ -57,6 +57,8 @@
   .btn.solid-red{background:var(--red);border-color:var(--red);color:#fff}
   .textbtn{background:none;border:none;color:var(--ink);min-height:48px;font-size:14px}
   .helper{background:var(--stone);border-radius:var(--r-md);padding:12px;font-size:13px}
+  .warnbox{background:#FFF7E0;border:1px solid var(--amber);border-radius:var(--r-md);
+    padding:10px 12px;font-size:13px}
   .preview-chip{font-family:ui-monospace,monospace;color:var(--teal);font-size:13px}
   .banner{background:#FFF7E0;border:1px solid var(--amber);border-radius:var(--r-md);
     padding:10px 12px;font-size:13px}
@@ -71,6 +73,9 @@
   .bar i{display:block;height:100%;background:var(--amber);width:70%}
   .err{background:#FFF1F2;border:1px solid var(--red);border-radius:var(--r-md);
     padding:12px;font-size:14px}
+  .warnbadge{width:40px;height:40px;border-radius:50%;margin:8px auto 0;
+    border:3px solid var(--red);color:var(--red);font-size:24px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
   .rowbtns{display:flex;gap:8px}.rowbtns>*{flex:1}
   .stats{display:flex;gap:8px}
   .stat{flex:1;background:#fff;border:1px solid var(--stone);border-radius:var(--r-md);
@@ -97,15 +102,15 @@
     font-family:ui-monospace,monospace;font-size:12px;line-height:1.6;
     max-height:320px;overflow-y:auto;white-space:pre-wrap}
   .bottomnav{display:flex;background:#fff;border-top:1px solid var(--stone)}
-  .bottomnav button{flex:1;background:none;border:none;min-height:64px;font-size:11px;color:#666;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit}
-  .bottomnav button .ic{font-size:20px}
+  .bottomnav button{flex:1;background:none;border:none;min-height:64px;font-size:12px;color:#666;
+    display:flex;align-items:center;justify-content:center;font-family:inherit}
   .bottomnav button.active{color:var(--ink);font-weight:700}
   .sim{background:var(--ink);color:var(--paper);font-size:11px}
   .sim summary{padding:12px 16px;min-height:48px;cursor:pointer;list-style:none;
     display:flex;align-items:center;gap:8px}
-  .sim summary::before{content:"⌃";opacity:.7}
-  .sim[open] summary::before{content:"⌄"}
+  .sim summary::before{content:"";border-left:5px solid transparent;
+    border-right:5px solid transparent;border-top:6px solid var(--paper)}
+  .sim[open] summary::before{border-top:none;border-bottom:6px solid var(--paper)}
   .sim .btns{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
   .sim button{flex:1;min-height:48px;border-radius:var(--r-pill);border:1px solid var(--paper);
     background:transparent;color:var(--paper);font-size:12px;min-width:80px}
@@ -126,9 +131,8 @@
 <body data-state="loading">
 
 <div class="phone">
-  <div class="statusbar"><span>14:32</span><span>▲ WiFi ▮▮▮ 87%</span></div>
+  <div class="statusbar"><span>14:32</span><span>WiFi &middot; 87%</span></div>
   <div class="topbar">
-    <span>◈</span>
     <span><span class="app">WADaemon</span><br><span class="pkg">com.zaaaam.wadaemon</span></span>
     <span class="chip"><span class="dot pulse" id="chipDot"></span><span id="chipText">Menyiapkan...</span></span>
   </div>
@@ -155,7 +159,7 @@
           <label>Nomor WhatsApp</label>
           <input id="phone" type="tel" placeholder="0812 3456 7890" oninput="normPreview()">
           <div class="helper">Contoh normalisasi otomatis:<br>
-            0812... → +62 812-xxxx-xxxx<br>62 812... → +62 812-xxxx-xxxx<br>+62 812... → +62 812-xxxx-xxxx</div>
+            0812... menjadi +62 812-xxxx-xxxx<br>62 812... menjadi +62 812-xxxx-xxxx<br>+62 812... menjadi +62 812-xxxx-xxxx</div>
           <p class="preview-chip" id="normOut"></p>
           <button class="btn" onclick="toPairing()">Buat Kode Pairing</button>
           <p><small>Kode berlaku 60 detik.</small></p>
@@ -163,13 +167,13 @@
       </section>
 
       <section data-state-view id="v-pairing">
-        <div class="banner">Masukkan kode ini di WhatsApp → Pengaturan → Perangkat Tertaut → Tautkan dengan nomor telepon</div>
+        <div class="banner">Masukkan kode ini di WhatsApp, menu Pengaturan, Perangkat Tertaut, Tautkan dengan nomor telepon</div>
         <div class="card center">
-          <div class="code"><span class="grp" id="codeA"></span><span class="sep">—</span><span class="grp" id="codeB"></span></div>
+          <div class="code"><span class="grp" id="codeA"></span><span class="sep">-</span><span class="grp" id="codeB"></span></div>
           <p class="count" id="pairCount">Kedaluwarsa dalam 01:00</p>
           <div class="bar"><i id="pairBar"></i></div>
           <div class="rowbtns">
-            <button class="btn secondary" onclick="toast('Kode disalin')">⧉ Salin Kode</button>
+            <button class="btn secondary" onclick="toast('Kode disalin')">Salin Kode</button>
             <button class="textbtn" onclick="setState('unpaired')">Batalkan Pairing</button>
           </div>
           <p><small id="pairFor">Kode untuk +62 ...</small></p>
@@ -178,16 +182,16 @@
 
       <section data-state-view id="v-connected">
         <div class="card" style="border-color:var(--teal)">
-          <h1>✓ Terhubung</h1>
+          <h1>Status: Terhubung</h1>
           <p>Nomor terhubung<br><b class="mono">+62 812-3456-7890</b></p>
           <p>Terhubung sejak<br><b id="connSince">13 Sep 2026, 14:32 WIB</b> <span class="mono" id="connDur">Durasi: 00:00:00</span></p>
         </div>
-        <button class="btn danger" onclick="document.getElementById('dlg').classList.add('open')">⛓ Putuskan Sesi</button>
+        <button class="btn danger" onclick="document.getElementById('dlg').classList.add('open')">Putuskan Sesi</button>
       </section>
 
       <section data-state-view id="v-error">
         <div class="card center">
-          <div style="font-size:24px;color:var(--red)">⚠</div>
+          <div class="warnbadge">!</div>
           <h1>Koneksi terputus</h1>
           <select id="errSel" onchange="errText()">
             <option>Sesi WhatsApp kedaluwarsa. Silakan pairing ulang.</option>
@@ -207,9 +211,9 @@
       </div>
 
       <div class="card">
-        <h2>Modul aktif <span class="textbtn" style="min-height:0" onclick="showTab('modul')">Lihat semua →</span></h2>
+        <h2>Modul aktif <span class="textbtn" style="min-height:0" onclick="showTab('modul')">Lihat semua</span></h2>
         <div id="dashMods">
-          <div class="modrow"><span class="meta"><b>Menu &amp; Perintah</b><br><span class="cmds">.menu .help .ping</span></span></div>
+          <div class="modrow"><span class="meta"><b>Menu dan Perintah</b><br><span class="cmds">.menu .help .ping</span></span></div>
           <div class="modrow"><span class="meta"><b>Stiker</b><br><span class="cmds">.stiker</span></span></div>
         </div>
       </div>
@@ -221,7 +225,7 @@
         <h1>Modul <small style="font-weight:400">(<span id="modCount">2</span> aktif)</small></h1>
         <div id="modList">
           <details class="mod" open>
-            <summary>Menu &amp; Perintah <small class="mono">v1.2</small></summary>
+            <summary>Menu dan Perintah <small class="mono">v1.2</small></summary>
             <p class="cmds mono">.menu .help .ping</p>
             <p>Balas perintah dasar + menu bantuan otomatis.</p>
             <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" checked onchange="countMods()"><span class="sw"></span></span></label>
@@ -231,14 +235,14 @@
           <details class="mod">
             <summary>Stiker <small class="mono">v0.9</small></summary>
             <p class="cmds mono">.stiker</p>
-            <p>Ubah gambar jadi stiker (proses di Kotlin native, tanpa sharp).</p>
+            <p>Ubah gambar jadi stiker (proses di Kotlin native).</p>
             <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" checked onchange="countMods()"><span class="sw"></span></span></label>
             <div class="rowbtns"><button class="btn secondary" onclick="toast('Konfigurasi disimpan (simulasi)')">Simpan Config</button>
             <button class="btn danger" onclick="toast('Modul dihapus (simulasi)')">Hapus</button></div>
           </details>
           <details class="mod">
             <summary>AI Chat <small class="mono">v0.3</small></summary>
-            <p class="cmds mono">(tanpa prefix — balas DM)</p>
+            <p class="cmds mono">(tanpa prefix, balas DM)</p>
             <p>Responder AI via modul luar (API key diisi di config).</p>
             <label>API Key</label><input placeholder="sk-...">
             <label class="modrow"><span>Aktif</span><span class="switch" style="margin-left:auto"><input type="checkbox" onchange="countMods()"><span class="sw"></span></span></label>
@@ -249,11 +253,12 @@
       </div>
 
       <div class="card">
-        <h2>＋ Tambah Modul</h2>
+        <h2>Tambah Modul</h2>
         <label>Nama modul</label><input id="nmName" placeholder="Contoh: Auto Reply">
         <label>Sumber</label>
         <select id="nmSrc"><option>Template: perintah sederhana</option><option>File .js dari penyimpanan</option><option>URL (git / raw)</option></select>
         <label>Perintah (pisah spasi)</label><input id="nmCmds" placeholder=".halo .pagi">
+        <div class="warnbox">Modul boleh memakai library apa pun, termasuk yang berat atau native. Aplikasi menampilkan peringatan bila modul terdeteksi berat, tapi tetap dipasang dan dijalankan.</div>
         <button class="btn" onclick="addMod()">Pasang Modul</button>
       </div>
     </div>
@@ -269,11 +274,11 @@
           <option value="[stiker]">Modul: Stiker</option>
         </select>
         <div class="logbox" id="logBox">[bridge] listen 127.0.0.1:3939
-[bridge] GET /status → unpaired
-[menu] perintah .ping dari +62... → dibalas
-[bridge] POST /pair +62... → kode dibuat
-[stiker] gambar → webp (native) 34KB
-[bridge] connection.update → open</div>
+[bridge] GET /status: unpaired
+[menu] perintah .ping dari +62... dibalas
+[bridge] POST /pair +62...: kode dibuat
+[stiker] gambar ke webp (native) 34KB
+[bridge] connection.update: open</div>
         <div class="rowbtns">
           <button class="btn secondary" onclick="toast('Log disalin')">Salin Log</button>
           <button class="btn secondary" onclick="toast('Log dihapus (simulasi)')">Hapus</button>
@@ -286,9 +291,9 @@
       <div class="card">
         <h1>Izin aplikasi</h1>
         <p>Tanpa izin ini koneksi bisa mati saat layar mati atau HP idle.</p>
-        <div class="permrow"><span>🔔 Notifikasi status<br><small>Android 13+</small></span><span class="st no" id="pNotif">Belum</span></div>
-        <div class="permrow"><span>⚡ Abaikan optimasi baterai</span><span class="st no" id="pBatt">Belum</span></div>
-        <div class="permrow" style="border:none"><span>🌐 Internet + foreground service</span><span class="st ok">Aktif</span></div>
+        <div class="permrow"><span>Notifikasi status<br><small>Android 13 ke atas</small></span><span class="st no" id="pNotif">Belum</span></div>
+        <div class="permrow"><span>Abaikan optimasi baterai</span><span class="st no" id="pBatt">Belum</span></div>
+        <div class="permrow" style="border:none"><span>Internet dan foreground service</span><span class="st ok">Aktif</span></div>
         <button class="btn secondary" onclick="grant('pNotif')">Minta Izin Notifikasi</button>
         <button class="btn secondary" onclick="grant('pBatt')">Bebaskan dari Optimasi Baterai</button>
       </div>
@@ -300,14 +305,14 @@
   </main>
 
   <nav class="bottomnav">
-    <button id="nav-dashboard" class="active" onclick="showTab('dashboard')"><span class="ic">◈</span>Dashboard</button>
-    <button id="nav-modul" onclick="showTab('modul')"><span class="ic">🧩</span>Modul</button>
-    <button id="nav-log" onclick="showTab('log')"><span class="ic">≣</span>Log</button>
-    <button id="nav-pengaturan" onclick="showTab('pengaturan')"><span class="ic">⚙</span>Pengaturan</button>
+    <button id="nav-dashboard" class="active" onclick="showTab('dashboard')">Dashboard</button>
+    <button id="nav-modul" onclick="showTab('modul')">Modul</button>
+    <button id="nav-log" onclick="showTab('log')">Log</button>
+    <button id="nav-pengaturan" onclick="showTab('pengaturan')">Pengaturan</button>
   </nav>
 
   <details class="sim">
-    <summary>Panel simulasi (khusus mockup — tidak ada di aplikasi asli)</summary>
+    <summary>Panel simulasi (khusus mockup, tidak ada di aplikasi asli)</summary>
     <div class="btns">
       <button onclick="setState('loading',true)">Loading</button>
       <button onclick="setState('unpaired')">Unpaired</button>
@@ -334,8 +339,8 @@ pairing:["Menunggu Pairing","var(--amber)"],connected:["Terhubung","var(--teal)"
 error:["Gagal Terhubung","var(--grey)"]};
 const notif={loading:["WADaemon • Menyiapkan...","Menghubungkan bridge..."],
 unpaired:["WADaemon • Terputus","Tap untuk buka WADaemon dan pairing"],
-pairing:["WADaemon • Menunggu pairing...","Kode tampil — segera masukkan di WhatsApp"],
-connected:["WADaemon • Terhubung","+62 ... • Aktif"],
+pairing:["WADaemon • Menunggu pairing...","Kode tampil, segera masukkan di WhatsApp"],
+connected:["WADaemon • Terhubung","+62 ... Aktif"],
 error:["WADaemon • Gagal terhubung","Tap untuk pairing ulang"]};
 const LOG_LINES=document.getElementById("logBox").textContent.split("\n");
 let timers=[];

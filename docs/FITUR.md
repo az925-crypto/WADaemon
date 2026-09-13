@@ -1,8 +1,12 @@
 # Fitur penuh WADaemon (revisi scope — modul dikelola di dalam app)
 
 PRD awal (§26) bilang modul bot terpisah di luar app. Atas permintaan user,
-manajemen modul masuk ke dalam aplikasi. Daemon tetap ramping; modul yang
-berat/native tetap disarankan jalan di luar via bridge.
+manajemen modul masuk ke dalam aplikasi. Modul boleh memakai library apa
+pun (termasuk berat/native) — aplikasi cukup menampilkan peringatan saat
+pasang, instalasi tetap jalan.
+
+## Aturan global
+- Tanpa emoji di mana pun di aplikasi (teks, ikon, notifikasi, log).
 
 ## 1. Dashboard (tab Beranda)
 - Kartu status koneksi WA: unpaired / pairing / connected / disconnected + error spesifik
@@ -25,4 +29,3 @@ berat/native tetap disarankan jalan di luar via bridge.
 
 ## Batasan yang tetap berlaku
 - 1 nomor WA per instalasi; 1 instance Node per proses (crash modul = restart app)
-- Lib native (sharp/ffmpeg/dkk) tetap dilarang di dalam app → via Kotlin/modul luar
