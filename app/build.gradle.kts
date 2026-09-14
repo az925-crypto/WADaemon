@@ -24,9 +24,29 @@ android {
         }
     }
 
+    // Signing release HANYA bila env tersedia (diisi CI dari secrets).
+    // Build lokal tanpa env tetap jalan sebagai unsigned.
+    val ksPath = System.getenv("WADAEMON_KEYSTORE_PATH")
+    val ksPass = System.getenv("WADAEMON_STORE_PASSWORD")
+    val ksAlias = System.getenv("WADAEMON_KEY_ALIAS")
+    val ksKeyPass = System.getenv("WADAEMON_KEY_PASSWORD")
+    if (!ksPath.isNullOrEmpty() && !ksPass.isNullOrEmpty() && !ksAlias.isNullOrEmpty() && !ksKeyPass.isNullOrEmpty()) {
+        signingConfigs {
+            create("release") {
+                storeFile = rootProject.file(ksPath)
+                storePassword = ksPass
+                keyAlias = ksAlias
+                keyPassword = ksKeyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

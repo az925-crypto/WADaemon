@@ -18,3 +18,6 @@ app/libnode/include/
 .DS_Store
 .idea/
 *.iml
+# Keystore JANGAN PERNAH di-commit (hanya di CI via secrets + backup lokal)
+*.jks
+*.keystore
