@@ -144,7 +144,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Batalkan Pairing"
-                android:background="?attr/selectableItemBackground" />
+                android:background="?android:attr/selectableItemBackground" />
         </LinearLayout>
 
         <LinearLayout
