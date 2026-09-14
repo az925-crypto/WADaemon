@@ -15,8 +15,16 @@ Daemon konektivitas WhatsApp on-device (`com.zaaaam.wadaemon`).
 
 ## Status
 
-Skeleton awal (M0): project Android minimal + workflow release.
-`MainActivity` saat ini placeholder — UI asli mengikuti mockup yang di-approve.
+M1 (JNI + Node embed), M2 (pairing nomor + auto-reconnect + logout),
+M3 (foreground service + notif persistent + UI status 4 tab),
+M4 (loader + eksekusi modul + bridge kirim/terima) — implementasi selesai,
+menunggu uji device fisik + CI hijau.
+
+Bridge `127.0.0.1:3939` (auth header `X-Bridge-Token`, token per boot di
+`filesDir/bridge.token`): `POST /pair`, `GET /status`, `POST /logout`,
+`GET /stats`, `GET /logs`, `GET /modules`, `POST /modules/reload`,
+`POST /send`. Modul: `filesDir/modules/<id>/{manifest.json,index.js}`,
+handler `export default async ({ chatId, text, send, reply }) => {...}`.
 
 ## Dokumen
 

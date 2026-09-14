@@ -43,10 +43,40 @@ class MainActivity : Activity() {
         }
     }
 
+    // Countdown kode pairing (tampilan 60 dtk sesuai FITUR.md; masa berlaku
+    // sebenarnya ikut server WhatsApp, habis countdown user request ulang).
+    private var pairExpiryMs = 0L
+    private var lastPairCode: String? = null
+    @Volatile private var statusBusy = false
+    private val countdown = object : Runnable {
+        override fun run() {
+            val left = ((pairExpiryMs - System.currentTimeMillis()) / 1000).toInt()
+            val base = "${findViewById<TextView>(R.id.pairInfo).tag ?: ""}"
+            if (left > 0 && findViewById<View>(R.id.cardCode).visibility == View.VISIBLE) {
+                findViewById<TextView>(R.id.pairInfo).text = "$base  •  $left dtk".trim()
+                ui.postDelayed(this, 1000)
+            } else if (findViewById<View>(R.id.cardCode).visibility == View.VISIBLE) {
+                findViewById<TextView>(R.id.pairInfo).text =
+                    "$base  •  Kode mungkin kedaluwarsa, buat ulang bila gagal.".trim()
+            }
+        }
+    }
+
+    private fun startCountdown(phone: String) {
+        pairExpiryMs = System.currentTimeMillis() + 60_000
+        lastPairCode = findViewById<TextView>(R.id.pairCode).text.toString()
+        findViewById<TextView>(R.id.pairInfo).tag = "Kode untuk $phone"
+        findViewById<TextView>(R.id.pairInfo).text = "Kode untuk $phone  •  60 dtk"
+        ui.removeCallbacks(countdown)
+        ui.post(countdown)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        NodeRunner.start(this)
+        WaApi.init(filesDir)
+        // M3: Node hidup di foreground service agar tahan di background.
+        WaService.start(this)
 
         findViewById<Button>(R.id.navDashboard).setOnClickListener { showTab(0) }
         findViewById<Button>(R.id.navModul).setOnClickListener { showTab(1); loadModules() }
@@ -64,12 +94,31 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.btnNotifPerm).setOnClickListener { requestNotifPerm() }
         findViewById<Button>(R.id.btnBatteryPerm).setOnClickListener { requestBatteryExemption() }
 
+        findViewById<EditText>(R.id.inputPhone).addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                findViewById<TextView>(R.id.normPreview).text =
+                    previewNorm(s?.toString() ?: "")
+            }
+        })
+
         showTab(0)
         ui.post(poll)
     }
 
+    // Cermin wa/phone.js: 00... = internasional, 0 = trunk ID -> 62.
+    private fun previewNorm(raw: String): String {
+        var d = raw.filter { it.isDigit() }
+        if (d.isEmpty()) return ""
+        if (d.startsWith("00")) d = d.trimStart('0')
+        else if (d.startsWith("0")) d = "62" + d.substring(1)
+        return if (d.length in 10..15) "Terkirim sebagai +$d" else "Belum valid (10-15 digit)"
+    }
+
     override fun onDestroy() {
         ui.removeCallbacks(poll)
+        ui.removeCallbacks(countdown)
         super.onDestroy()
     }
 
@@ -93,8 +142,18 @@ class MainActivity : Activity() {
     }
 
     private fun refreshStatus() = bg {
-        val s = WaApi.getStatus()
-        runOnUiThread { renderStatus(s) }
+        // Skip tick bila request sebelumnya belum selesai (bridge lambat/mati)
+        // agar thread tidak menumpuk tiap 3 dtk. Cek-and-set atomik.
+        synchronized(this) {
+            if (statusBusy) return@bg
+            statusBusy = true
+        }
+        try {
+            val s = WaApi.getStatus()
+            runOnUiThread { renderStatus(s) }
+        } finally {
+            synchronized(this) { statusBusy = false }
+        }
     }
 
     private fun renderStatus(s: WaApi.Status) {
@@ -104,6 +163,12 @@ class MainActivity : Activity() {
             "logged_out" -> "Keluar"
             else -> "Terputus"
         }
+        findViewById<View>(R.id.chipDot).setBackgroundColor(when (s.status) {
+            "connected" -> 0xFF22C55E.toInt()
+            "pairing" -> 0xFFEAB308.toInt()
+            "logged_out" -> 0xFFEF4444.toInt()
+            else -> 0xFF9CA3AF.toInt()
+        })
         findViewById<TextView>(R.id.notifTitle).text = "WADaemon"
         findViewById<TextView>(R.id.notifBody).text = when (s.status) {
             "connected" -> "${s.phoneNumber ?: ""} Aktif"
@@ -118,6 +183,18 @@ class MainActivity : Activity() {
         if (s.status == "pairing" && s.code != null) {
             findViewById<TextView>(R.id.pairCode).text =
                 s.code.chunked(4).joinToString(" ")
+            // Kode berubah via poll (bukan tombol) -> countdown 60 dtk diulang.
+            val shown = findViewById<TextView>(R.id.pairCode).text.toString()
+            if (pairExpiryMs == 0L || lastPairCode != shown) startCountdown(s.phoneNumber ?: "")
+        } else if (s.status == "pairing") {
+            // Pairing tanpa kode (mis. request baru): jangan tampilkan kode basi.
+            findViewById<TextView>(R.id.pairCode).text = "---- ----"
+        } else if (pairExpiryMs != 0L) {
+            pairExpiryMs = 0L
+            lastPairCode = null
+            ui.removeCallbacks(countdown)
+            // Bersihkan kode lama agar tidak tersalin basi setelah connect.
+            findViewById<TextView>(R.id.pairCode).text = "---- ----"
         }
         if (s.status == "connected") {
             findViewById<TextView>(R.id.connInfo).text =
@@ -148,7 +225,7 @@ class MainActivity : Activity() {
         runOnUiThread {
             r.onSuccess {
                 findViewById<TextView>(R.id.pairCode).text = it.chunked(4).joinToString(" ")
-                findViewById<TextView>(R.id.pairInfo).text = "Kode untuk $phone"
+                startCountdown(phone)
                 renderStatus(WaApi.Status("pairing", it, phone, null))
             }.onFailure { toast(it.message ?: "Pairing gagal.") }
         }
@@ -156,6 +233,11 @@ class MainActivity : Activity() {
 
     private fun copyCode() {
         val code = findViewById<TextView>(R.id.pairCode).text.toString().replace(" ", "")
+        // Tolak placeholder/belum-ada-kode; kode asli boleh mengandung hubung.
+        if (code.isBlank() || code.all { it == '-' }) {
+            toast("Belum ada kode pairing untuk disalin.")
+            return
+        }
         val cm = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("pairing", code))
         toast("Kode disalin")
@@ -179,13 +261,20 @@ class MainActivity : Activity() {
     }
 
     private fun loadModules() = bg {
-        val mods = try { WaApi.getModules() } catch (e: Exception) { emptyList() }
+        // null = bridge mati (bedakan dari "belum ada modul").
+        val mods = try { WaApi.getModules() } catch (e: Exception) { null }
         runOnUiThread { renderModules(mods) }
     }
 
-    private fun renderModules(mods: List<WaApi.Module>) {
+    private fun renderModules(mods: List<WaApi.Module>?) {
         val box = findViewById<LinearLayout>(R.id.moduleList)
         box.removeAllViews()
+        if (mods == null) {
+            val t = TextView(this)
+            t.text = "Bridge belum bisa diakses. Tunggu Node selesai start lalu buka tab ini lagi."
+            box.addView(t)
+            return
+        }
         if (mods.isEmpty()) {
             val t = TextView(this)
             t.text = "Belum ada modul. Tambahkan di bawah."
@@ -252,7 +341,17 @@ class MainActivity : Activity() {
                 .put("commands", org.json.JSONArray(cmds))
                 .put("enabled", true)
             File(dir, "manifest.json").writeText(manifest.toString())
-            File(dir, "index.js").writeText("// Modul $name (eksekusi penuh menyusul M4)\n")
+            // Template modul echo: API least-privilege { chatId, text, send, reply }.
+            // Ubah index.js lalu kirim perintah pemicu; toggle off langsung
+            // berhenti (daftar enabled dibaca fresh), tapi UBAH KODE butuh
+            // restart app (cache ESM Node).
+            val trigger = if (cmds.isEmpty()) "" else " // picu: ${cmds.joinToString(" ")}"
+            File(dir, "index.js").writeText(
+                "// Modul $name$trigger\n" +
+                    "export default async ({ text, reply }) => {\n" +
+                    "  await reply(`[$name] menerima: ` + text);\n" +
+                    "};\n"
+            )
             WaApi.reloadModules()
             runOnUiThread {
                 toast("Modul dipasang.")
@@ -267,15 +366,31 @@ class MainActivity : Activity() {
 
     private fun loadLog() = bg {
         val s = try { WaApi.getStatus() } catch (e: Exception) { null }
-        runOnUiThread {
-            findViewById<TextView>(R.id.logText).text = if (s == null) {
-                "Bridge belum bisa diakses. Tunggu Node selesai start lalu tap Muat Ulang."
-            } else {
+        val st = try { WaApi.getStats() } catch (e: Exception) { null }
+        val logs = try { WaApi.getLogs(100) } catch (e: Exception) { null }
+        // Format di bg thread (bukan UI) agar 100 baris tidak bikin jank.
+        val fmt = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
+        val logText = when {
+            s == null -> "Bridge belum bisa diakses. Tunggu Node selesai start lalu tap Muat Ulang."
+            logs.isNullOrEmpty() ->
                 "status: ${s.status}\ncode: ${s.code ?: "-"}\nphone: ${s.phoneNumber ?: "-"}\nerror: ${s.lastError ?: "-"}"
+            else -> logs.joinToString("\n") { e ->
+                "[${fmt.format(java.util.Date(e.t))}][${e.src}] ${e.msg}"
             }
-            findViewById<TextView>(R.id.statsText).text =
-                "status=${s?.status ?: "?"} modul: lihat tab Modul"
         }
+        val statsText =
+            "status=${s?.status ?: "?"} diteruskan=${st?.forwarded ?: 0} " +
+                "modulAktif=${st?.modulesActive ?: 0} uptime=${fmtUptime(st?.uptimeSec ?: 0)}"
+        runOnUiThread {
+            findViewById<TextView>(R.id.logText).text = logText
+            findViewById<TextView>(R.id.statsText).text = statsText
+        }
+    }
+
+    private fun fmtUptime(sec: Long): String {
+        val h = sec / 3600
+        val m = (sec % 3600) / 60
+        return if (h > 0) "${h}j ${m}m" else "${m}m"
     }
 
     private fun requestNotifPerm() {
