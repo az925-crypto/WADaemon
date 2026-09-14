@@ -77,6 +77,10 @@ val syncNodejsAssets by tasks.registering(Copy::class) {
     }
     into(nodejsAssetsDir)
 }
-tasks.matching { it.name.startsWith("merge") && it.name.contains("Assets") }.configureEach {
+// Semua konsumen assets generated (merge Assets + lint vital) wajib menunggu
+// sync selesai — kalau tidak Gradle 8 protes implicit dependency.
+tasks.matching {
+    (it.name.startsWith("merge") && it.name.contains("Assets")) || it.name.contains("Lint")
+}.configureEach {
     dependsOn(syncNodejsAssets)
 }

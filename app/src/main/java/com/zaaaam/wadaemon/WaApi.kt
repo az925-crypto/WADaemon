@@ -118,13 +118,12 @@ object WaApi {
         return List(arr.length()) { i ->
             val m = arr.getJSONObject(i)
             val cmds = m.optJSONArray("commands")
+            val warns = m.optJSONArray("warnings")
             Module(
                 m.optString("id"), m.optString("name"), m.optString("version"),
-                List(cmds?.length() ?: 0) { k -> cmds.getString(k) },
+                List(cmds?.length() ?: 0) { k -> cmds?.optString(k) ?: "" },
                 m.optBoolean("enabled", true),
-                List(m.optJSONArray("warnings")?.length() ?: 0) { k ->
-                    m.getJSONArray("warnings").getString(k)
-                },
+                List(warns?.length() ?: 0) { k -> warns?.optString(k) ?: "" },
             )
         }
     }
